@@ -62,7 +62,10 @@ its own server or shim.
 `phocinae` is a connector of its own because `phocinae-server` (github.com/Phocinae/phocinae-server), which serves the
 Phocinae-Largha-150M-v1 decision model, has two shape differences from the other System One servers: it takes
 `questions` as a list of `{id, type, options}` rather than a map, and a choice answer is the 0-based option index with
-per-option probabilities in `option_scores`. The connector translates both ways; everything else matches. Start the
+per-option probabilities in `option_scores`. The connector translates both ways; everything else matches. The server has
+no instructions field, so the question's instructions are sent in front of the state (instructions, a blank line, then
+the JSON state) rather than dropped. Only `choice` questions are answered: `noul` and `score` answers are a boolean and
+a 2-10 integer, not option indexes, and asking for them fails with a clear error. Start the
 server with `PHOC_MODEL_DIR=<weights checkout> python -m phocinae.main` (weights:
 huggingface.co/Phocinae/Phocinae-Largha-150M-v1). It runs on CPU or CUDA, and needs no key unless the server sets
 `PHOC_BEARER_TOKEN`.

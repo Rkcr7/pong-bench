@@ -206,9 +206,22 @@ await t("phocinae: list questions out, index answers back", async () => {
   assert.equal(sent.questions[0].type, "choice");
   assert.deepEqual(sent.questions[0].options, ["u", "d", "s"], "criteria descriptions become the options, in order");
   assert.equal(typeof sent.state, "string", "phocinae-server takes state as a string");
+  assert.equal(sent.state, "i\n\n" + JSON.stringify({ ball: { x: 1, y: 2 } }),
+               "instructions ride in front of the state, a blank line, then the JSON state");
   assert.equal(sent.model, "Phocinae-Largha-150M-v1");
   srv.close();
 });
+await t("phocinae: a non-choice question is rejected with a clear error", async () => {
+  const srv = await mockServer(() => [200, { answers: { move: 1 } }]);
+  const c = await connect(checkConfig({ connector: "phocinae", url: srv.url, auth: "none", retries: 0 }));
+  await assert.rejects(
+    () => c.decide({ state: {}, questions: { move: { type: "score", instructions: "i", criteria: { up: "u" } } } }),
+    /answers choice questions only/,
+  );
+  assert.equal(srv.seen.length, 0, "nothing is sent for a question the connector cannot answer");
+  srv.close();
+});
+
 await t("phocinae: a bad index or a body without answers fails cleanly", async () => {
   const srv = await mockServer((req, body, n) => n === 1
     ? [200, { answers: { move: 7 }, option_scores: { move: [0.5, 0.3, 0.2] } }]

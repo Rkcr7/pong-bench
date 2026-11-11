@@ -25,17 +25,26 @@ export function create(cfg, { key } = {}) {
     kind: "phocinae", url,
     async decide({ state, questions }, { signal } = {}) {
       const [qid, question] = Object.entries(questions)[0] ?? [];
-      const criteria = question?.criteria ?? {};
+      if (!qid) throw new ConnectorError("phocinae needs one choice question with criteria");
+      const type = question.type || "choice";
+      if (type !== "choice") {
+        throw new ConnectorError(`phocinae answers choice questions only; "${qid}" is a "${type}" question ` +
+                                 "(noul answers are booleans and score answers are 2-10 integers, not option indexes)");
+      }
+      const criteria = question.criteria ?? {};
       const keys = Object.keys(criteria);
-      if (!qid || keys.length === 0) throw new ConnectorError("phocinae needs one choice question with criteria");
+      if (keys.length === 0) throw new ConnectorError("phocinae needs one choice question with criteria");
+      // phocinae-server has no instructions field and takes `state` as a string, so the prompt's instructions ride
+      // in front of the state (a blank line, then the JSON state) instead of being dropped.
+      const instructions = typeof question.instructions === "string" ? question.instructions.trim() : "";
+      const stateText = typeof state === "string" ? state : JSON.stringify(state);
       const body = JSON.stringify({
         ...(cfg.extraBody || {}),
         model: cfg.model || DEFAULT_MODEL,
-        // phocinae-server takes `state` as a string; other servers here accept the structured object as-is
-        state: typeof state === "string" ? state : JSON.stringify(state),
+        state: instructions ? `${instructions}\n\n${stateText}` : stateText,
         questions: [{
           id: qid,
-          type: question.type || "choice",
+          type,
           options: keys.map((k) => (typeof criteria[k] === "string" ? criteria[k] : JSON.stringify(criteria[k]))),
         }],
       });

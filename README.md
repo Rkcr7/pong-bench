@@ -259,10 +259,11 @@ Start-PongBench.bat, Start-PongBench.command, start-pongbench.sh    launchers fo
 
 - **Rally saturates for strong models.** A model that is right most of the time survives the wall. Among strong models
   the decisions suite does the ranking, and the reasoning track has the headroom.
-- **Tested live:** the `systemone` connector against TypeSafe's API and a local System One server, the `phocinae`
-  connector against a local `phocinae-server`, and the `openai` connector against the bundled transformers server. The Anthropic, Azure, Databricks, Cloudflare, OpenRouter, Gemini
-  and Ollama configs follow those providers' documentation and the same code paths, but were not run against the real
-  services here. If one needs a fix, a pull request with the `check` output is very welcome.
+- **Tested live:** the `systemone` connector against TypeSafe's API and a local System One server, the `openai` connector
+  against the bundled transformers server, and the `phocinae` connector against a local `phocinae-server` — the last one
+  was tested by its contributor, not by the maintainer. The Anthropic, Azure, Databricks, Cloudflare, OpenRouter,
+  Gemini and Ollama configs follow those providers' documentation and the same code paths, but were not run against the
+  real services here. If one needs a fix, a pull request with the `check` output is very welcome.
 - **Platforms.** Checked by hand on Windows 11 and on Linux (Debian 12, Node 18 and 22): the tests, the frozen suites, a
   run, the launcher, the app's pages on a case-sensitive file system, HTTP and WebSocket decisions. macOS runs the same
   code and passes the same checks in CI: every push runs them on Linux, macOS and Windows with Node 18, 20 and 22. The
